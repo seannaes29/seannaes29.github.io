@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capital Access Tool | Rooted SBA</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #f4f1eb;
+    color: #1e1e1e;
+    min-height: 100vh;
+  }
+
+  /* ── LAYOUT ── */
+  .shell {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  /* ── BRAND ── */
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e8e2d8;
+  }
+  .brand-icon { font-size: 28px; }
+  .brand-name { font-size: 16px; font-weight: 700; color: #1a3d1a; letter-spacing: .4px; }
+  .brand-sub  { font-size: 12px; color: #999; }
+
+  /* ── SCREENS ── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #1a3d1a 0%, #2d6b2d 100%);
+    border-radius: 18px; padding: 40px 36px; color: white; margin-bottom: 24px;
+  }
+  .hero-eye   { font-size: 11px; font-weight: 700; letter-spacing: 2px;
+                text-transform: uppercase; color: #c9a84c; margin-bottom: 12px; }
+  .hero-title { font-size: 30px; font-weight: 800; line-height: 1.2; margin-bottom: 14px; }
+  .hero-sub   { font-size: 15px; color: rgba(255,255,255,.8); line-height: 1.65; }
+
+  .checklist {
+    background: white; border-radius: 12px; padding: 20px 24px;
+    border: 1px solid #e8e2d8; margin-bottom: 24px;
+    font-size: 14px; color: #555; line-height: 1.9;
+  }
+  .checklist strong { color: #1e1e1e; }
+
+  /* ── BUTTON ── */
+  .btn {
+    display: inline-block; width: 100%;
+    background: #2d5a27; color: white;
+    border: none; border-radius: 12px;
+    padding: 15px 28px; font-size: 16px; font-weight: 600;
+    cursor: pointer; transition: background .18s;
+    font-family: inherit; letter-spacing: .2px;
+    text-align: center;
+  }
+  .btn:hover { background: #1a3d1a; }
+  .btn.btn-ghost {
+    background: transparent; color: #555;
+    border: 1.5px solid #d0c9be;
+  }
+  .btn.btn-ghost:hover { background: #f0ebe2; }
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+  .btn-row.single { grid-template-columns: 1fr; }
+
+  /* ── PROGRESS ── */
+  .progress-wrap { margin-bottom: 24px; }
+  .progress-label { font-size: 12px; color: #999; font-weight: 500; margin-bottom: 8px; }
+  .progress-bar {
+    height: 6px; background: #e8e2d8; border-radius: 99px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: #2d5a27; border-radius: 99px;
+    transition: width .3s ease;
+  }
+
+  /* ── QUESTION CARD ── */
+  .q-card {
+    background: white; border-radius: 16px; padding: 32px;
+    border: 1px solid #e8e2d8; box-shadow: 0 2px 14px rgba(0,0,0,.05);
+    margin-bottom: 20px;
+  }
+  .q-num  { font-size: 11px; font-weight: 700; letter-spacing: 2px;
+             text-transform: uppercase; color: #c9a84c; margin-bottom: 10px; }
+  .q-text { font-size: 21px; font-weight: 700; color: #0d1b0d;
+             line-height: 1.3; margin-bottom: 8px; }
+  .q-help { font-size: 13.5px; color: #888; line-height: 1.55; }
+
+  /* ── RADIO OPTIONS ── */
+  .options { display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
+  .option {
+    display: flex; align-items: center; gap: 14px;
+    background: #f8f5ef; border: 2px solid transparent;
+    border-radius: 12px; padding: 14px 18px;
+    cursor: pointer; transition: all .15s;
+    font-size: 15px; font-weight: 500; color: #1e1e1e;
+    user-select: none;
+  }
+  .option:hover { border-color: #c9a84c; background: #fdf8ee; }
+  .option.selected { border-color: #2d5a27; background: #f0f7f0; color: #1a3d1a; }
+  .option-dot {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid #ccc; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+  }
+  .option.selected .option-dot {
+    border-color: #2d5a27; background: #2d5a27;
+  }
+  .option.selected .option-dot::after {
+    content: ''; width: 8px; height: 8px;
+    background: white; border-radius: 50%;
+    display: block;
+  }
+
+  /* ── CONTACT SCREEN ── */
+  .contact-card {
+    background: white; border-radius: 16px; padding: 32px;
+    border: 1px solid #e8e2d8; box-shadow: 0 2px 14px rgba(0,0,0,.05);
+    margin-bottom: 20px;
+  }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 13px; font-weight: 600;
+                 color: #444; margin-bottom: 6px; }
+  .field input {
+    width: 100%; padding: 12px 14px;
+    border: 1.5px solid #ddd; border-radius: 10px;
+    font-size: 15px; font-family: inherit;
+    transition: border-color .15s; color: #1e1e1e;
+  }
+  .field input:focus { outline: none; border-color: #2d5a27; }
+  .field input::placeholder { color: #bbb; }
+
+  /* ── RESULTS ── */
+  .result-hero {
+    background: linear-gradient(135deg, #1a3d1a 0%, #2d6b2d 100%);
+    border-radius: 18px; padding: 30px 32px; color: white; margin-bottom: 28px;
+  }
+  .result-eye   { font-size: 11px; font-weight: 700; letter-spacing: 2px;
+                  text-transform: uppercase; color: #c9a84c; margin-bottom: 10px; }
+  .result-title { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+  .result-sub   { font-size: 14px; color: rgba(255,255,255,.75); line-height: 1.6; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: #999;
+    margin: 28px 0 14px;
+  }
+
+  /* ── RESULT CARDS ── */
+  .rec-card {
+    background: white; border-radius: 14px;
+    border: 1px solid #e8e2d8; border-left: 5px solid #ccc;
+    box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    margin-bottom: 16px; overflow: hidden;
+  }
+  .rec-card-header {
+    padding: 20px 22px 16px;
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+  }
+  .rec-card-title-row { display: flex; align-items: flex-start; gap: 12px; }
+  .rec-emoji { font-size: 28px; flex-shrink: 0; }
+  .rec-name    { font-size: 16px; font-weight: 800; color: #0d1b0d; margin-bottom: 3px; }
+  .rec-tagline { font-size: 12px; color: #888; line-height: 1.4; }
+
+  .fit-badge {
+    font-size: 11px; font-weight: 700; padding: 4px 11px;
+    border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+  }
+  .fit-strong  { background: #e8f5e9; color: #2e7d32; }
+  .fit-good    { background: #fff8e1; color: #e65100; }
+  .fit-explore { background: #e3f2fd; color: #1565c0; }
+
+  .rec-stats {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; padding: 0 22px 16px;
+  }
+  .stat { background: #f8f5ef; border-radius: 8px; padding: 10px 12px; }
+  .stat-label { font-size: 10px; color: #999; font-weight: 600;
+                text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .stat-value { font-size: 12.5px; font-weight: 700; color: #1e1e1e; line-height: 1.3; }
+
+  .why-box {
+    background: #f0f7f0; margin: 0 22px 16px;
+    border-radius: 8px; padding: 12px 14px;
+    font-size: 12.5px; line-height: 1.5;
+  }
+  .why-label { font-weight: 700; color: #2d5a27; }
+
+  /* ── ACCORDION ── */
+  .accordion { border-top: 1px solid #f0ebe2; }
+  .accordion-toggle {
+    width: 100%; background: none; border: none;
+    padding: 14px 22px; text-align: left;
+    font-size: 13px; font-weight: 600; color: #555;
+    cursor: pointer; display: flex; justify-content: space-between;
+    align-items: center; font-family: inherit;
+    transition: background .15s;
+  }
+  .accordion-toggle:hover { background: #faf7f3; }
+  .accordion-chevron { transition: transform .2s; font-size: 12px; }
+  .accordion-body {
+    display: none; padding: 4px 22px 20px;
+  }
+  .accordion-body.open { display: block; }
+  .accordion-toggle.open .accordion-chevron { transform: rotate(180deg); }
+
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .detail-col h4 { font-size: 12px; font-weight: 700; color: #444;
+                   margin-bottom: 8px; letter-spacing: .3px; }
+  .detail-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .detail-list li { font-size: 12.5px; color: #444; display: flex;
+                    align-items: flex-start; gap: 7px; line-height: 1.45; }
+  .detail-list li .icon { flex-shrink: 0; font-size: 11px; margin-top: 1px; }
+
+  .dc-tip {
+    margin-top: 14px; background: #f0f7f0; border-radius: 8px;
+    padding: 11px 14px; font-size: 12.5px; color: #444; line-height: 1.5;
+  }
+  .dc-tip strong { color: #2d5a27; }
+  .learn-more {
+    display: inline-block; margin-top: 10px;
+    font-size: 12.5px; font-weight: 600; color: #1b5e8a;
+    text-decoration: none;
+  }
+  .learn-more:hover { text-decoration: underline; }
+
+  /* ── ALSO ON RADAR ── */
+  .radar-card {
+    background: white; border-radius: 12px;
+    border: 1px solid #e8e2d8;
+    margin-bottom: 10px; overflow: hidden;
+  }
+
+  /* ── WARNING ── */
+  .warning {
+    background: #fff8e1; border: 1px solid #ffe082;
+    border-radius: 12px; padding: 14px 18px;
+    font-size: 13px; color: #5d4037; line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  /* ── CTA ── */
+  .cta {
+    background: linear-gradient(135deg, #1a3d1a 0%, #2d6b2d 100%);
+    border-radius: 16px; padding: 32px; color: white;
+    text-align: center; margin-top: 32px;
+  }
+  .cta-title { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+  .cta-sub   { font-size: 14px; color: rgba(255,255,255,.8);
+               margin-bottom: 18px; line-height: 1.65; }
+  .cta-link  { font-size: 14px; font-weight: 700; color: #c9a84c; }
+
+  .restart-row { text-align: center; margin-top: 24px; }
+  .restart-btn {
+    background: none; border: none; color: #999;
+    font-size: 13px; cursor: pointer; font-family: inherit;
+    text-decoration: underline;
+  }
+  .restart-btn:hover { color: #555; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 520px) {
+    .hero { padding: 28px 22px; }
+    .hero-title { font-size: 24px; }
+    .q-card { padding: 22px; }
+    .rec-stats { grid-template-columns: 1fr 1fr; }
+    .detail-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- BRAND -->
+  <div class="brand">
+    <div class="brand-icon">🌱</div>
+    <div>
+      <div class="brand-name">Rooted SBA</div>
+      <div class="brand-sub">Small Business Advisory</div>
+    </div>
+  </div>
+
+  <!-- ══ WELCOME ══ -->
+  <div class="screen active" id="screen-welcome">
+    <div class="hero">
+      <div class="hero-eye">Capital Access Tool</div>
+      <div class="hero-title">Find the Right Funding for Your Business</div>
+      <div class="hero-sub">Answer 8 quick questions and we'll match you with the capital options that best fit where you are right now.</div>
+    </div>
+    <div class="checklist">
+      ✅ &nbsp;Takes about <strong>2 minutes</strong> to complete<br>
+      ✅ &nbsp;No credit check or personal data required<br>
+      ✅ &nbsp;Covers 9 funding types including DC-specific resources<br>
+      ✅ &nbsp;Results are personalized to your situation
+    </div>
+    <button class="btn" onclick="startQuiz()">Get Started →</button>
+  </div>
+
+  <!-- ══ QUESTIONS ══ -->
+  <div class="screen" id="screen-questions">
+    <div class="progress-wrap">
+      <div class="progress-label" id="progress-label">Question 1 of 8</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div class="q-card">
+      <div class="q-num" id="q-num">Question 1</div>
+      <div class="q-text" id="q-text"></div>
+      <div class="q-help" id="q-help"></div>
+      <div class="options" id="options-list"></div>
+    </div>
+    <div class="btn-row" id="nav-row">
+      <button class="btn btn-ghost" id="btn-back" onclick="prevQuestion()">← Back</button>
+      <button class="btn" id="btn-next" onclick="nextQuestion()">Next →</button>
+    </div>
+  </div>
+
+  <!-- ══ CONTACT ══ -->
+  <div class="screen" id="screen-contact">
+    <div class="contact-card">
+      <div class="q-num">Almost there</div>
+      <div class="q-text">Want to save your results?</div>
+      <div class="q-help" style="margin-top:8px;">Enter your info and a Rooted SBA advisor will follow up with personalized guidance. Or skip straight to your results.</div>
+      <div style="margin-top:24px;">
+        <div class="field">
+          <label>Your name</label>
+          <input type="text" id="contact-name" placeholder="First and last name">
+        </div>
+        <div class="field">
+          <label>Email address</label>
+          <input type="email" id="contact-email" placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label>Business name <span style="color:#bbb;font-weight:400;">(optional)</span></label>
+          <input type="text" id="contact-business" placeholder="Your business name">
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="showResults()">Skip — Show My Results</button>
+      <button class="btn" onclick="submitContact()">Submit & See Results →</button>
+    </div>
+  </div>
+
+  <!-- ══ RESULTS ══ -->
+  <div class="screen" id="screen-results">
+    <div class="result-hero">
+      <div class="result-eye">Your Results</div>
+      <div class="result-title" id="results-title">Here are your best-fit capital options.</div>
+      <div class="result-sub" id="results-sub"></div>
+    </div>
+    <div id="warning-box"></div>
+    <div id="top-picks"></div>
+    <div id="radar-section"></div>
+    <div class="cta">
+      <div class="cta-title">Ready to take the next step?</div>
+      <div class="cta-sub">Rooted SBA helps Black-owned businesses in Washington DC navigate the full capital process — from building your credit profile to preparing a winning loan application.</div>
+      <div class="cta-link">📧 Visit rootedsba.com to connect with an advisor</div>
+    </div>
+    <div class="restart-row">
+      <button class="restart-btn" onclick="restart()">← Start over</button>
+    </div>
+  </div>
+
+</div><!-- /shell -->
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────────────
+
+const QUESTIONS = [
+  {
+    key: "years_in_business",
+    text: "How long have you been in business?",
+    help: "Count from when you opened, even if revenue started slowly.",
+    options: ["Pre-launch (not open yet)", "Under 2 years", "2–5 years", "5+ years"]
+  },
+  {
+    key: "annual_revenue",
+    text: "What is your approximate annual revenue?",
+    help: "Use your most recent 12 months. Estimates are fine — no one will verify this here.",
+    options: ["None / Pre-revenue", "Under $50K", "$50K – $250K", "$250K or more"]
+  },
+  {
+    key: "purpose",
+    text: "What do you need the capital for?",
+    help: "Pick the option that best describes your primary need.",
+    options: ["Day-to-day operations or cash flow", "Equipment or real estate", "Business growth or expansion", "A specific project or initiative"]
+  },
+  {
+    key: "amount_needed",
+    text: "How much capital are you looking to raise?",
+    help: "If you're unsure, pick the range that covers your best estimate.",
+    options: ["Under $25K", "$25K – $100K", "$100K – $500K", "$500K or more"]
+  },
+  {
+    key: "credit_score",
+    text: "What is your personal credit score range?",
+    help: "Most lenders check personal credit, especially for newer businesses. Check yours free at annualcreditreport.com.",
+    options: ["Below 580", "580 – 639", "640 – 699", "700 or above", "I don't know yet"]
+  },
+  {
+    key: "equity_tolerance",
+    text: "Are you open to giving up partial ownership of your business?",
+    help: "Some funding types require investors to own a piece of your company. Others don't touch your ownership at all.",
+    options: ["Yes, I'm open to it", "No, I want to keep full ownership", "Not sure yet"]
+  },
+  {
+    key: "timeline",
+    text: "How soon do you need the capital?",
+    help: "Some options fund in days; others take months. Be honest — timing matters a lot here.",
+    options: ["Within 30 days", "1 – 3 months", "3 – 6 months", "No rush — planning ahead"]
+  },
+  {
+    key: "has_account",
+    text: "Do you have a business bank account and an EIN?",
+    help: "An EIN (Employer Identification Number) is a free IRS tax ID for your business. Most lenders require both.",
+    options: ["Yes, I have both", "I have one but not the other", "No, not yet"]
+  }
+];
+
+const OPTIONS_DATA = {
+  sba_7a: {
+    name: "SBA 7(a) Loan", emoji: "🏛️",
+    tagline: "Government-backed loan for almost any business purpose",
+    type: "Debt — You Repay It", amount: "$50K – $5 Million", timeline: "1–3 months",
+    requirements: ["Credit score of 640+ (670+ preferred)", "2+ years in business", "Business plan and 2 years of financials", "Business bank account and EIN"],
+    pros: ["Lower interest rates than most business loans", "Long repayment terms (up to 25 years)", "Keep 100% ownership", "Flexible — funds almost any purpose"],
+    cons: ["Significant paperwork required", "Approval can take 4–8+ weeks", "Harder to qualify in early stages"],
+    url: "https://www.sba.gov/funding-programs/loans/7a-loans",
+    dcTip: "DC SBDC offers free loan prep coaching — start at <a href='https://dcsbdc.com' target='_blank'>dcsbdc.com</a> before you apply."
+  },
+  sba_microloan: {
+    name: "SBA Microloan", emoji: "🔬",
+    tagline: "Small loans for newer or smaller businesses through nonprofit lenders",
+    type: "Debt — You Repay It", amount: "Up to $50,000", timeline: "4–8 weeks",
+    requirements: ["Credit score of 575+ (flexible)", "Can be 0–2 years in business", "Basic business plan", "Collateral and personal guarantee often required"],
+    pros: ["Accessible for new or early-stage businesses", "Often includes free mentorship and coaching", "More flexible credit requirements"],
+    cons: ["Smaller loan amounts (max $50K)", "Higher interest than SBA 7(a)", "Only through approved nonprofit lenders"],
+    url: "https://www.sba.gov/funding-programs/loans/microloans",
+    dcTip: "Accion Opportunity Fund is an active SBA Microloan lender in DC — <a href='https://accionopportunityfund.org' target='_blank'>accionopportunityfund.org</a>"
+  },
+  sba_504: {
+    name: "SBA 504 Loan", emoji: "🏢",
+    tagline: "For buying real estate, equipment, or major fixed assets",
+    type: "Debt — You Repay It", amount: "$125K – $5.5 Million", timeline: "2–4 months",
+    requirements: ["Credit score of 680+", "2+ years in business", "Purchasing a fixed asset", "10% down payment", "Net worth under $15M"],
+    pros: ["Very low fixed interest rates", "Terms up to 25 years", "Ideal for owning your space or equipment"],
+    cons: ["Only for fixed assets — not operations", "Complex multi-lender process", "Longer than the 7(a)"],
+    url: "https://www.sba.gov/funding-programs/loans/504-loans",
+    dcTip: "Capital Impact Partners can help structure a 504 loan in DC — <a href='https://capitalimpact.org' target='_blank'>capitalimpact.org</a>"
+  },
+  business_credit: {
+    name: "Business Credit Card or Line of Credit", emoji: "💳",
+    tagline: "Revolving credit you can draw from and repay as needed",
+    type: "Debt — You Repay It", amount: "$1K – $250K+", timeline: "1 day – 2 weeks",
+    requirements: ["Personal credit score of 600+ (680+ for best rates)", "EIN", "Business bank account", "Some revenue history helps"],
+    pros: ["Fastest funding — sometimes same-day approval", "Builds your business credit profile", "Flexible — use, repay, reuse"],
+    cons: ["High interest (15–29%) if you carry a balance", "Lower limits than loans", "Can hurt personal credit if mismanaged"],
+    url: "https://www.sba.gov/business-guide/manage-your-business/build-your-business-credit",
+    dcTip: "City First Bank is a DC-based, Black-founded bank that supports small businesses — <a href='https://cityfirstbank.com' target='_blank'>cityfirstbank.com</a>"
+  },
+  smbx: {
+    name: "SMBX — Community Bonds", emoji: "📜",
+    tagline: "Raise capital by selling bonds directly to your community",
+    type: "Debt — Repaid to Community Investors", amount: "$25K – $5 Million", timeline: "2–4 months",
+    requirements: ["At least $50K in annual revenue", "1+ year in business", "Compelling story to attract investors", "Business bank account and basic financials"],
+    pros: ["Keep 100% ownership", "Your community invests in your success", "The campaign doubles as marketing"],
+    cons: ["Must repay investors with interest", "Requires public financial disclosure", "Running a campaign takes real effort"],
+    url: "https://www.smbx.co/businesses",
+    dcTip: "SMBX works especially well in tight-knit communities — your existing customers can all become investors."
+  },
+  wefunder: {
+    name: "Wefunder — Equity Crowdfunding", emoji: "🚀",
+    tagline: "Raise money from many small investors in exchange for a share of your company",
+    type: "Equity — You Share Ownership", amount: "$50K – $5 Million", timeline: "2–4 months",
+    requirements: ["A compelling, shareable business story", "Some traction or proof of concept", "LLC or Corporation legal structure", "Willingness to share financials publicly"],
+    pros: ["No loan to repay", "Investors become your biggest advocates", "Can work at early stages with a strong story"],
+    cons: ["You give up partial ownership", "Ongoing investor communication required", "Platform fees of 7.9%+"],
+    url: "https://wefunder.com/raise",
+    dcTip: "Wefunder campaigns perform best with an existing audience — your collective network is a built-in head start."
+  },
+  grants: {
+    name: "Grants", emoji: "🎁",
+    tagline: "Free funding from government, foundations, or corporations — no repayment",
+    type: "Free Money — No Repayment", amount: "$1K – $250K+ (varies)", timeline: "1–6 months",
+    requirements: ["Must meet eligibility criteria (Black-owned, location, industry, etc.)", "Written application with business plan", "Some require matching funds", "Reporting on fund usage"],
+    pros: ["No repayment, no interest, no ownership given up", "Winning validates your credibility", "Often comes with visibility and support"],
+    cons: ["Highly competitive", "Funds often restricted to specific uses", "Slow — not for urgent cash needs"],
+    url: "https://www.grants.gov",
+    dcTip: "DC DSLBD and Greater Washington Community Foundation both offer grant programs — <a href='https://dslbd.dc.gov' target='_blank'>dslbd.dc.gov</a> and <a href='https://thecommunityfoundation.org' target='_blank'>thecommunityfoundation.org</a>"
+  },
+  cdfi: {
+    name: "CDFI or Community Lender", emoji: "🤝",
+    tagline: "Mission-driven lenders that exist to support underserved small businesses",
+    type: "Debt — You Repay It", amount: "$5K – $1 Million", timeline: "3–8 weeks",
+    requirements: ["Flexible credit (550+ in many cases)", "Basic business plan", "May accept alternative collateral", "Community impact focus is a plus"],
+    pros: ["Designed for businesses like yours", "Technical assistance often included", "More flexible than traditional banks"],
+    cons: ["Lower loan limits than banks", "Rates can be higher than SBA loans", "Some have waitlists"],
+    url: "https://ofn.org/cdfi-locator",
+    dcTip: "City First Bank, Capital Impact Partners, and Accion are all active DC-area CDFIs — <a href='https://cityfirstbank.com' target='_blank'>cityfirstbank.com</a>"
+  },
+  angel_vc: {
+    name: "Angel Investors or Venture Capital", emoji: "📈",
+    tagline: "Investors who fund high-growth businesses in exchange for equity",
+    type: "Equity — You Share Ownership", amount: "$25K – Millions", timeline: "3–12+ months",
+    requirements: ["High-growth, scalable business model", "Strong pitch deck and projections", "Demonstrated traction", "Warm investor introductions typically required"],
+    pros: ["Access to large amounts of capital", "Investors bring networks and expertise", "No monthly repayment"],
+    cons: ["Give up significant ownership", "Intense investor expectations", "Not suited for local or lifestyle businesses"],
+    url: "https://www.sba.gov/funding-programs/investment-capital/sbic-program",
+    dcTip: "The DC region has a growing ecosystem for Black founders — explore Greater Washington-area angel networks."
+  }
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let currentQ = 0;
+let answers  = {};
+let contact  = {};
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function startQuiz() {
+  currentQ = 0;
+  answers = {};
+  renderQuestion();
+  showScreen('questions');
+}
+
+function renderQuestion() {
+  const q     = QUESTIONS[currentQ];
+  const total = QUESTIONS.length;
+  const pct   = (currentQ / total) * 100;
+
+  document.getElementById('progress-label').textContent = `Question ${currentQ + 1} of ${total}`;
+  document.getElementById('progress-fill').style.width  = pct + '%';
+  document.getElementById('q-num').textContent  = `Question ${currentQ + 1}`;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('q-help').textContent = q.help;
+
+  const list = document.getElementById('options-list');
+  list.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const selected = answers[q.key] === opt;
+    const div = document.createElement('div');
+    div.className = 'option' + (selected ? ' selected' : '');
+    div.innerHTML = `<div class="option-dot"></div><span>${opt}</span>`;
+    div.onclick = () => selectOption(opt);
+    list.appendChild(div);
+  });
+
+  // Back button visibility
+  const backBtn = document.getElementById('btn-back');
+  backBtn.style.display = currentQ === 0 ? 'none' : 'block';
+
+  const navRow = document.getElementById('nav-row');
+  navRow.className = currentQ === 0 ? 'btn-row single' : 'btn-row';
+
+  // Next button label
+  document.getElementById('btn-next').textContent =
+    currentQ < total - 1 ? 'Next →' : 'See My Results →';
+}
+
+function selectOption(value) {
+  answers[QUESTIONS[currentQ].key] = value;
+  renderQuestion();
+}
+
+function nextQuestion() {
+  const q = QUESTIONS[currentQ];
+  if (!answers[q.key]) {
+    answers[q.key] = QUESTIONS[currentQ].options[0];
+  }
+  if (currentQ < QUESTIONS.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    showScreen('contact');
+  }
+}
+
+function prevQuestion() {
+  if (currentQ > 0) { currentQ--; renderQuestion(); }
+}
+
+function submitContact() {
+  contact.name     = document.getElementById('contact-name').value.trim() || 'there';
+  contact.email    = document.getElementById('contact-email').value.trim();
+  contact.business = document.getElementById('contact-business').value.trim();
+  showResults();
+}
+
+function restart() {
+  answers = {}; contact = {}; currentQ = 0;
+  showScreen('welcome');
+}
+
+// ── SCORING ───────────────────────────────────────────────────────────────────
+function scoreOptions(ans) {
+  const s = { sba_7a:0, sba_microloan:0, sba_504:0, business_credit:0,
+              smbx:0, wefunder:0, grants:0, cdfi:0, angel_vc:0 };
+
+  function add(m) { for (const [k,v] of Object.entries(m)) s[k] += v; }
+
+  const years = ans.years_in_business || '';
+  if      (years === "Pre-launch (not open yet)") add({grants:3,wefunder:2,cdfi:1,sba_7a:-5,sba_504:-5,sba_microloan:-2,business_credit:-1,smbx:-3,angel_vc:-2});
+  else if (years === "Under 2 years")             add({sba_microloan:3,cdfi:3,grants:2,business_credit:2,sba_7a:-1,sba_504:-5,smbx:-1});
+  else if (years === "2–5 years")                 add({sba_7a:3,smbx:2,business_credit:2,cdfi:2,sba_504:1,wefunder:1});
+  else if (years === "5+ years")                  add({sba_7a:3,sba_504:3,smbx:3,angel_vc:2,business_credit:2});
+
+  const rev = ans.annual_revenue || '';
+  if      (rev === "None / Pre-revenue") add({grants:3,wefunder:2,sba_7a:-4,sba_504:-5,smbx:-5,business_credit:-1,angel_vc:-2});
+  else if (rev === "Under $50K")         add({sba_microloan:3,cdfi:3,grants:2,business_credit:2,sba_7a:-1,sba_504:-3,smbx:-3});
+  else if (rev === "$50K – $250K")       add({sba_7a:2,smbx:2,business_credit:2,cdfi:2,wefunder:1,sba_microloan:1});
+  else if (rev === "$250K or more")      add({sba_7a:3,sba_504:3,smbx:3,angel_vc:2,business_credit:2,sba_microloan:-1});
+
+  const purpose = ans.purpose || '';
+  if      (purpose === "Day-to-day operations or cash flow") add({business_credit:3,sba_7a:2,cdfi:2,sba_microloan:2,sba_504:-6,angel_vc:-1});
+  else if (purpose === "Equipment or real estate")           add({sba_504:5,sba_7a:2,cdfi:1,wefunder:-1,grants:-1});
+  else if (purpose === "Business growth or expansion")       add({sba_7a:3,smbx:2,wefunder:2,cdfi:2,angel_vc:2});
+  else if (purpose === "A specific project or initiative")   add({grants:4,smbx:2,wefunder:2,cdfi:1});
+
+  const amt = ans.amount_needed || '';
+  if      (amt === "Under $25K")      add({sba_microloan:4,business_credit:3,cdfi:3,grants:2,sba_504:-5,angel_vc:-5,sba_7a:-1,smbx:-2});
+  else if (amt === "$25K – $100K")    add({sba_microloan:3,sba_7a:2,cdfi:3,business_credit:2,smbx:1,grants:1});
+  else if (amt === "$100K – $500K")   add({sba_7a:4,smbx:3,cdfi:2,wefunder:2,sba_microloan:-3,grants:-1});
+  else if (amt === "$500K or more")   add({sba_7a:4,sba_504:4,smbx:4,angel_vc:3,sba_microloan:-5,business_credit:-3,grants:-3});
+
+  const credit = ans.credit_score || '';
+  if      (credit === "Below 580")     add({grants:3,cdfi:3,wefunder:2,sba_7a:-5,sba_504:-5,business_credit:-3,sba_microloan:-2,smbx:-1});
+  else if (credit === "580 – 639")     add({cdfi:3,sba_microloan:3,grants:2,sba_7a:-2,sba_504:-4,business_credit:-1});
+  else if (credit === "640 – 699")     add({sba_7a:2,sba_microloan:3,cdfi:3,business_credit:2,sba_504:-1});
+  else if (credit === "700 or above")  add({sba_7a:4,sba_504:4,business_credit:4,smbx:2,sba_microloan:1});
+  else if (credit === "I don't know yet") add({cdfi:2,sba_microloan:1,grants:1});
+
+  const equity = ans.equity_tolerance || '';
+  if      (equity === "Yes, I'm open to it")          add({wefunder:4,angel_vc:4});
+  else if (equity === "No, I want to keep full ownership") add({sba_7a:1,sba_504:1,sba_microloan:1,cdfi:1,smbx:1,grants:1,business_credit:1,wefunder:-3,angel_vc:-5});
+  else if (equity === "Not sure yet")                 add({wefunder:1,angel_vc:1});
+
+  const tl = ans.timeline || '';
+  if      (tl === "Within 30 days")         add({business_credit:5,cdfi:1,sba_7a:-3,sba_504:-5,grants:-4,wefunder:-3,smbx:-3,sba_microloan:-1});
+  else if (tl === "1 – 3 months")           add({sba_microloan:3,cdfi:3,business_credit:2,wefunder:2,sba_7a:1,sba_504:-2});
+  else if (tl === "3 – 6 months")           add({sba_7a:3,sba_microloan:2,cdfi:2,smbx:2,wefunder:2,grants:2});
+  else if (tl === "No rush — planning ahead") add({sba_7a:2,sba_504:3,grants:4,smbx:3,wefunder:3,angel_vc:2});
+
+  const acct = ans.has_account || '';
+  if      (acct === "Yes, I have both")             add({sba_7a:1,sba_504:1,business_credit:1,cdfi:1,smbx:1});
+  else if (acct === "No, not yet")                  add({sba_7a:-2,sba_504:-2,sba_microloan:-1,business_credit:-2,cdfi:-1});
+  else if (acct === "I have one but not the other") add({sba_7a:-1,sba_504:-1});
+
+  return s;
+}
+
+function getReason(key, ans) {
+  const map = {
+    sba_7a: [
+      [["2–5 years","5+ years"].includes(ans.years_in_business), "Your business tenure meets the requirement"],
+      [["640 – 699","700 or above"].includes(ans.credit_score),  "Your credit score qualifies"],
+      [ans.purpose === "Business growth or expansion", "SBA 7(a) is ideal for growth capital"],
+    ],
+    sba_microloan: [
+      [["Pre-launch (not open yet)","Under 2 years"].includes(ans.years_in_business), "Accessible to newer and early-stage businesses"],
+      [["Under $25K","$25K – $100K"].includes(ans.amount_needed), "Fits your capital range well"],
+      [["Below 580","580 – 639","I don't know yet"].includes(ans.credit_score), "Has flexible credit score requirements"],
+    ],
+    sba_504: [
+      [ans.purpose === "Equipment or real estate", "Designed exactly for equipment and real estate purchases"],
+      [ans.years_in_business === "5+ years", "Your business track record is a strong qualifier"],
+    ],
+    business_credit: [
+      [ans.timeline === "Within 30 days", "The fastest funding option available"],
+      [ans.amount_needed === "Under $25K", "Credit lines fit this range well"],
+      [true, "A quick way to start building your business credit profile"],
+    ],
+    smbx: [
+      [["Business growth or expansion","A specific project or initiative"].includes(ans.purpose), "Community bonds work well for expansion and project funding"],
+      [["2–5 years","5+ years"].includes(ans.years_in_business), "You meet the revenue and tenure requirements"],
+    ],
+    wefunder: [
+      [ans.equity_tolerance === "Yes, I'm open to it", "You're open to sharing equity with your community"],
+      [ans.purpose === "A specific project or initiative", "Project-focused campaigns perform well on Wefunder"],
+    ],
+    grants: [
+      [ans.purpose === "A specific project or initiative", "Grants often fund specific projects well"],
+      [ans.equity_tolerance === "No, I want to keep full ownership", "Grants require no repayment and no equity"],
+      [true, "Free capital with no repayment obligation"],
+    ],
+    cdfi: [
+      [["Below 580","580 – 639","I don't know yet"].includes(ans.credit_score), "CDFIs have the most flexible credit standards"],
+      [["Pre-launch (not open yet)","Under 2 years"].includes(ans.years_in_business), "They specialize in early-stage businesses"],
+      [true, "Mission-driven lenders built for businesses like yours"],
+    ],
+    angel_vc: [
+      [ans.equity_tolerance === "Yes, I'm open to it", "You're open to equity investment"],
+      [ans.amount_needed === "$500K or more", "Angel and VC funding fits your capital target"],
+    ],
+  };
+  for (const [cond, text] of (map[key] || [])) {
+    if (cond) return text + '.';
+  }
+  return 'This option aligns with your overall business profile.';
+}
+
+// ── RENDER RESULTS ────────────────────────────────────────────────────────────
+function showResults() {
+  if (!contact.name) contact.name = 'there';
+
+  const scores = scoreOptions(answers);
+  const ranked = Object.entries(scores)
+    .filter(([,v]) => v > 0)
+    .sort(([,a],[,b]) => b - a);
+
+  // Header
+  const name = contact.name;
+  document.getElementById('results-title').textContent =
+    `Here are your best-fit capital options, ${name}.`;
+  document.getElementById('results-sub').textContent =
+    `We ranked ${ranked.length} options based on your answers — top picks are highlighted. Start with those.`;
+
+  // Warning
+  const warnBox = document.getElementById('warning-box');
+  warnBox.innerHTML = answers.has_account === "No, not yet"
+    ? `<div class="warning">⚠️ <strong>First step:</strong> Get your EIN for free at irs.gov and open a business bank account. Most lenders require both — and it takes less than a week.</div>`
+    : '';
+
+  // Top 3
+  const topPicks = ranked.slice(0, 3);
+  const fitLabels  = ["🌟 Strong Fit", "✅ Good Fit", "🔍 Worth Exploring"];
+  const fitClasses = ["fit-strong", "fit-good", "fit-explore"];
+  const borderColors = ["#2d5a27", "#c9a84c", "#1b5e8a"];
+
+  const topEl = document.getElementById('top-picks');
+  topEl.innerHTML = '';
+
+  topPicks.forEach(([key], i) => {
+    const opt = OPTIONS_DATA[key];
+    const reason = getReason(key, answers);
+    const card = document.createElement('div');
+    card.className = 'rec-card';
+    card.style.borderLeftColor = borderColors[i];
+
+    const reqHTML = opt.requirements.map(r => `<li><span class="icon">•</span>${r}</li>`).join('');
+    const prosHTML = opt.pros.map(p => `<li><span class="icon" style="color:#2e7d32">✓</span>${p}</li>`).join('');
+    const consHTML = opt.cons.map(c => `<li><span class="icon" style="color:#c62828">✗</span>${c}</li>`).join('');
+
+    card.innerHTML = `
+      <div class="rec-card-header">
+        <div class="rec-card-title-row">
+          <span class="rec-emoji">${opt.emoji}</span>
+          <div>
+            <div class="rec-name">${opt.name}</div>
+            <div class="rec-tagline">${opt.tagline}</div>
+          </div>
+        </div>
+        <span class="fit-badge ${fitClasses[i]}">${fitLabels[i]}</span>
+      </div>
+      <div class="rec-stats">
+        <div class="stat"><div class="stat-label">Amount</div><div class="stat-value">${opt.amount}</div></div>
+        <div class="stat"><div class="stat-label">Timeline</div><div class="stat-value">${opt.timeline}</div></div>
+        <div class="stat"><div class="stat-label">Type</div><div class="stat-value">${opt.type}</div></div>
+      </div>
+      <div class="why-box"><span class="why-label">Why this fits you: </span>${reason}</div>
+      <div class="accordion">
+        <button class="accordion-toggle" onclick="toggleAccordion(this)">
+          📋 See full details <span class="accordion-chevron">▼</span>
+        </button>
+        <div class="accordion-body">
+          <div class="detail-grid">
+            <div class="detail-col">
+              <h4>What you'll need to apply</h4>
+              <ul class="detail-list">${reqHTML}</ul>
+              <h4 style="margin-top:14px">Pros</h4>
+              <ul class="detail-list">${prosHTML}</ul>
+            </div>
+            <div class="detail-col">
+              <h4>Cons</h4>
+              <ul class="detail-list">${consHTML}</ul>
+            </div>
+          </div>
+          <div class="dc-tip">🏙️ <strong>DC Tip:</strong> ${opt.dcTip}</div>
+          <a class="learn-more" href="${opt.url}" target="_blank">🔗 Official resource & how to apply →</a>
+        </div>
+      </div>
+    `;
+    topEl.appendChild(card);
+  });
+
+  // Also on your radar (positions 3–5)
+  const radar = ranked.slice(3, 6);
+  const radarEl = document.getElementById('radar-section');
+  radarEl.innerHTML = '';
+
+  if (radar.length > 0) {
+    radarEl.innerHTML = '<div class="section-label">Also on Your Radar</div>';
+    radar.forEach(([key]) => {
+      const opt = OPTIONS_DATA[key];
+      const reqHTML = opt.requirements.map(r => `<li><span class="icon">•</span>${r}</li>`).join('');
+      const prosHTML = opt.pros.map(p => `<li><span class="icon" style="color:#2e7d32">✓</span>${p}</li>`).join('');
+      const consHTML = opt.cons.map(c => `<li><span class="icon" style="color:#c62828">✗</span>${c}</li>`).join('');
+
+      const card = document.createElement('div');
+      card.className = 'radar-card';
+      card.innerHTML = `
+        <div class="accordion">
+          <button class="accordion-toggle" onclick="toggleAccordion(this)">
+            <span>${opt.emoji} &nbsp;${opt.name} — ${opt.tagline}</span>
+            <span class="accordion-chevron">▼</span>
+          </button>
+          <div class="accordion-body">
+            <div style="display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap;">
+              <span style="font-size:12px;color:#666;"><strong>Amount:</strong> ${opt.amount}</span>
+              <span style="font-size:12px;color:#666;"><strong>Timeline:</strong> ${opt.timeline}</span>
+            </div>
+            <div class="detail-grid">
+              <div class="detail-col">
+                <h4>Requirements</h4>
+                <ul class="detail-list">${reqHTML}</ul>
+                <h4 style="margin-top:14px">Pros</h4>
+                <ul class="detail-list">${prosHTML}</ul>
+              </div>
+              <div class="detail-col">
+                <h4>Cons</h4>
+                <ul class="detail-list">${consHTML}</ul>
+              </div>
+            </div>
+            <div class="dc-tip">🏙️ <strong>DC Tip:</strong> ${opt.dcTip}</div>
+            <a class="learn-more" href="${opt.url}" target="_blank">🔗 Learn more →</a>
+          </div>
+        </div>
+      `;
+      radarEl.appendChild(card);
+    });
+  }
+
+  showScreen('results');
+}
+
+function toggleAccordion(btn) {
+  const body = btn.nextElementSibling;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+}
+</script>
+</body>
+</html>
